@@ -1,6 +1,5 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3
 
-import sys
 import os
 import threading
 import argparse
@@ -37,7 +36,7 @@ def extract_nmap_xml(filename):
                         url = "http://"
                     url += hostname + ":" + port["portid"]
                     urls.append(url)
-                    print "Adding " + url
+                    print(f"Adding {url}")
     return urls
 
 
@@ -49,12 +48,13 @@ def take_screenshots(url_set, nb_threads):
             port = url.split("://")[1].split(":")[1]
             sc_file = 'pics/' + hostname + "-" + port + ".png"
             PROGRESS += 1
-            print "[" + str(PROGRESS) + "/" + str(TOTAL)  + "] Downloading: " + url + " > " + sc_file
+            print(f"[{PROGRESS}/{TOTAL}] Downloading: {url} > {sc_file}")
             devnull = open(os.devnull, 'w')
             subprocess.call(['phantomjs', '--ssl-protocol=any', '--ignore-ssl-errors=true', '../sc.js', url, sc_file], stdout=devnull, stderr=devnull)
             devnull.close()
         except Exception as exc:
-            print "Screenshot exception : " + str(exc)
+            # print "Screenshot exception : " + str(exc)
+            print(f"Screenshot exception : {exc}")
 
 
 def generate_report(urls, nb_threads=5, report_name="report.html"):
@@ -101,7 +101,7 @@ def generate_report(urls, nb_threads=5, report_name="report.html"):
     for thread in threads:
         thread.join()
 
-    print "[*] Report generated: file://" + os.path.join(os.getcwd(), report_name)
+    print(f"[*] Report generated: file:// {os.path.join(os.getcwd(), report_name)}")
 
 
 def main():
@@ -113,7 +113,7 @@ def main():
 
     # Open nmap file and extract Web applications URLs
     if not os.path.exists(args.file):
-        print "File not found: " + args.file
+        print(f"File not found: {args.file}")
         exit(0)
 
     with open(args.file, "r") as f:
@@ -121,16 +121,16 @@ def main():
             if "<!DOCTYPE nmaprun>" in line:
                 break
         else:
-            print "Not a valid nmap XML"
+            print("Not a valid nmap XML")
             exit(1)
 
     urls = extract_nmap_xml(args.file)
-    
-    print "Web applications: "
-    print "=" * 50
+
+    print("Web applications: ")
+    print("=" * 50)
     for url in urls:
-        print url
-    print "=" * 50
+        print(url)
+    print("=" * 50)
     global TOTAL
     TOTAL = len(urls)
 
@@ -139,7 +139,7 @@ def main():
     if args.output:
         report_name = args.output
     if os.path.exists(report_name):
-        if raw_input("Folder exists (" + report_name + ") overwrite ?(y/n)") == "y":
+        if input("Folder exists (" + report_name + ") overwrite ?(y/n)") == "y":
             shutil.rmtree(report_name)
         else:
             exit(1)
