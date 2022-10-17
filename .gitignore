@@ -1,3 +1,7 @@
 .idea/
 
 venv/
+
+bigbrowser_report/
+
+result.xml

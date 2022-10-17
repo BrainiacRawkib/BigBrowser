@@ -20,6 +20,14 @@ pip install -r requirements.txt
 
 Running on a headless server:
 
+## Usage
+
+```
+xvfb-run ./Bigbrowser.py filename.xml
+```
+
+#### Ex
+
 ```
 apt install xvfb
 xvfb-run ./Bigbrowser.py scan.xml

@@ -40,7 +40,7 @@ def extract_nmap_xml(filename):
     return urls
 
 
-def take_screenshots(url_set, nb_threads):
+def take_screenshots(url_set: list, nb_threads):
     global PROGRESS
     for url in url_set:
         try:
@@ -53,11 +53,10 @@ def take_screenshots(url_set, nb_threads):
             subprocess.call(['phantomjs', '--ssl-protocol=any', '--ignore-ssl-errors=true', '../sc.js', url, sc_file], stdout=devnull, stderr=devnull)
             devnull.close()
         except Exception as exc:
-            # print "Screenshot exception : " + str(exc)
             print(f"Screenshot exception : {exc}")
 
 
-def generate_report(urls, nb_threads=5, report_name="report.html"):
+def generate_report(urls: list, nb_threads: int = 5, report_name: str = "report.html"):
     os.makedirs("pics/")
     html_file = open(report_name, "w")
     html_file.write('''
@@ -88,13 +87,27 @@ def generate_report(urls, nb_threads=5, report_name="report.html"):
     '''
     )
     html_file.close()
-    thread_load = len(urls) / nb_threads
+    thread_load = len(urls) // nb_threads
     threads = []
     for i in range(nb_threads):
         if i == (nb_threads - 1):
-            threads.append(threading.Thread(target=take_screenshots, args=(urls[i * thread_load:], nb_threads)))
+            threads.append(
+                threading.Thread(
+                    target=take_screenshots,
+                    args=(
+                        urls[i * thread_load:], nb_threads
+                    )
+                )
+            )
         else:
-            threads.append(threading.Thread(target=take_screenshots, args=(urls[i * thread_load:(i + 1) * thread_load ], nb_threads)))
+            threads.append(
+                threading.Thread(
+                    target=take_screenshots,
+                    args=(
+                        urls[i * thread_load:(i + 1) * thread_load], nb_threads
+                    )
+                )
+            )
 
     for thread in threads:
         thread.start()
@@ -156,4 +169,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
