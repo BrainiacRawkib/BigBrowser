@@ -23,14 +23,18 @@ Running on a headless server:
 ## Usage
 
 ```
-xvfb-run ./Bigbrowser.py filename.xml
+xvfb-run ./Bigbrowser.py filename.xml host
 ```
 
 #### Ex
 
 ```
 apt install xvfb
-xvfb-run ./Bigbrowser.py scan.xml
+xvfb-run ./Bigbrowser.py scan.xml 150.12.34.222
+
+or
+
+xvfb-run ./Bigbrowser.py scan.xml example.com
 ```
 
 ## Example
