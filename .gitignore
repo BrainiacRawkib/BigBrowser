@@ -5,3 +5,4 @@ venv/
 bigbrowser_report/
 
 result.xml
+*.xml
