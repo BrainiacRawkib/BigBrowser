@@ -32,25 +32,9 @@ def sanitize_host(host: str):
     return host
 
 
-def execute_nmap(host: str):
-    """execute nmap"""
-    output_file = f'{sanitize_host(host)}.xml'
-    try:
-        subprocess.run(f'sudo nmap -oX {output_file} -sV {host}',
-                       shell=True,
-                       check=True,
-                       capture_output=True,
-                       text=True)
-        return output_file
-    except subprocess.CalledProcessError as e:
-        logging.error(e)
-    finally:
-        subprocess.run(f'sudo rm {output_file}')
-
-
 def extract_nmap_xml(filename):
     xml_file = open(filename, 'r')
-    soup = BeautifulSoup(xml_file, 'lxml')
+    soup = BeautifulSoup(xml_file, 'xml')
     urls = []
     for host in soup.find_all('host'):
         hostname = host.address["addr"]
@@ -85,7 +69,9 @@ def take_screenshots(url_set: list, nb_threads):
             PROGRESS += 1
             print(f"[{PROGRESS}/{TOTAL}] Downloading: {url} > {sc_file}")
             devnull = open(os.devnull, 'w')
-            subprocess.call(['phantomjs', '--ssl-protocol=any', '--ignore-ssl-errors=true', '../sc.js', url, sc_file], stdout=devnull, stderr=devnull)
+            subprocess.run(['phantomjs', '--ssl-protocol=any', '--ignore-ssl-errors=true', '../sc.js', url, sc_file],
+                           stdout=devnull,
+                           stderr=devnull)
             devnull.close()
         except Exception as exc:
             logging.exception(f"Screenshot exception : {exc}")
@@ -106,12 +92,15 @@ def generate_report(urls: list, nb_threads: int = 5, report_name: str = "report.
     for url in urls:
         hostname = url.split("://")[1].split(":")[0]
         port = url.split("://")[1].split(":")[1]
-        sc_file = 'pics/' + hostname + "-" + port + ".png"
+        # sc_file = 'pics/' + hostname + "-" + port + ".png"
+        sc_file = f'pics/{hostname}-{port}.png'
         if col == 0:
             html_file.write('<tr>')
-        html_file.write('<td style="text-align:center"><div style="overflow:hidden"><a target="_blank" href="' \
-            + url + '"><img style="height:60%;width:80%;background:white;" src="' + sc_file + \
-            '"/></a><strong><a target="_blank" href="'+ url + '" style="color: white">' + url + '</a></strong></div></td>')
+        file = f'<td style="text-align:center">' \
+               f'<div style="overflow:hidden"><a target="_blank" href="{url}">' \
+               f'<img style="height:60%;width:80%;background:white;" src="{sc_file}"/></a><strong>' \
+               f'<a target="_blank" href="{url}" style="color: white">{url}</a></strong></div></td>'
+        html_file.write(file)
         if col == 3:
             html_file.write('</tr>')
         col = (col + 1) % 4
@@ -198,11 +187,13 @@ def zip_dir(host: str):
 
 
 def main():
+    print(f"<=====================Start=====================>")
     parser = argparse.ArgumentParser(description="Generates an HTML report with screenshots of all Web applications from an XML nmap scan.")
     parser.add_argument("file", help="Nmap XML output")
+    parser.add_argument("host", help="Host name or IP address")
     parser.add_argument("-t", "--threads", help="Number of threads")
     parser.add_argument("-o", "--output", help="Name of the generated report")
-    parser.add_argument("host", help="Host name or IP address")
+
     args = parser.parse_args()
 
     # Open nmap file and extract Web applications URLs
@@ -221,10 +212,10 @@ def main():
     urls = extract_nmap_xml(args.file)
 
     print("Web applications: ")
-    print("=" * 50)
+    print("=" * 40)
     for url in urls:
         print(url)
-    print("=" * 50)
+    print("=" * 40)
 
     global TOTAL
     TOTAL = len(urls)
@@ -255,6 +246,7 @@ def main():
 
     generate_report(urls, nb_threads, report_name=f'{report_name}.html')
     zip_dir(args.host)
+    print(f"<=====================Stop=====================>")
 
 
 if __name__ == "__main__":
